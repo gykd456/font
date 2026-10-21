@@ -1,0 +1,13 @@
+{
+  "weight": 72,
+  "contrast": 0.82,
+  "extend": 8,
+  "scale": 0.96,
+  "straighten": 14,
+  "smoothAngle": 50,
+  "smoothPasses": 2,
+  "taper": 0.35,
+  "taperLength": 0.4,
+  "miterLimit": 2.2,
+  "roundCap": false
+}

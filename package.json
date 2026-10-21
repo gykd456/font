@@ -1,0 +1,13 @@
+{
+  "name": "chuhei",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "程序生成的中文黑体",
+  "scripts": {
+    "extract": "python3 tools/extract.py",
+    "build": "node tools/outline.mjs && python3 tools/build_font.py",
+    "preview": "python3 -m http.server 8080"
+  },
+  "license": "SEE LICENSE IN LICENSES/ARPHICPL.TXT"
+}

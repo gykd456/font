@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>初黑 · 字体调参</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --ink: #1b1b1b; --muted: #77746e;
+    --line: #e4e1db; --accent: #c2410c; --grid: #f0d9cc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161616; --panel: #1f1f1f; --ink: #eeeeea; --muted: #9a968f; --line: #333; --accent: #fb923c; --grid: #3a2a20; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "PingFang SC", "Noto Sans SC", sans-serif; }
+  @font-face { font-family: "ChuHei"; src: url("../dist/ChuHei-Regular.woff2") format("woff2"); }
+  .app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+  aside { background: var(--panel); border-right: 1px solid var(--line); padding: 20px; position: sticky; top: 0; height: 100vh; overflow: auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 13px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .field label b { font-weight: 500; }
+  .field label span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .field small { display: block; color: var(--muted); font-size: 12px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .check { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--bg); color: var(--ink); padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  main { padding: 20px 24px 60px; min-width: 0; }
+  .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .toolbar input[type=text] { flex: 1; min-width: 200px; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+  .hero { display: flex; gap: 4px; flex-wrap: wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .hero svg { width: 120px; height: 120px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
+  .cell { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px; cursor: pointer; }
+  .cell:hover { border-color: var(--accent); }
+  .cell svg { width: 100%; display: block; aspect-ratio: 1; }
+  .glyph { fill: var(--ink); }
+  .guide { stroke: var(--grid); fill: none; stroke-width: 6; }
+  .skeleton { stroke: var(--accent); fill: none; stroke-width: 6; opacity: .85; }
+  .skeleton-dot { fill: var(--accent); }
+  h2 { font-size: 15px; margin: 28px 0 10px; }
+  .sample { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; font-family: "ChuHei", serif; }
+  .sample p { margin: 0 0 8px; line-height: 1.4; }
+  .note { color: var(--muted); font-size: 12px; }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    main { padding: 16px; }
+    .hero svg { width: 84px; height: 84px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <h1>初黑 · 调参</h1>
+    <p class="sub">拖动参数，所有样字实时变化。满意后复制参数到 <code>params.json</code>，再运行 <code>npm run build</code> 导出字体。</p>
+    <div id="controls"></div>
+    <label class="check"><input type="checkbox" id="roundCap"> 圆头圆角（接近圆体）</label>
+    <label class="check"><input type="checkbox" id="showSkeleton"> 显示骨架中心线</label>
+    <label class="check"><input type="checkbox" id="showGuide" checked> 显示字身框</label>
+    <div class="row">
+      <button class="primary" id="copy">复制参数</button>
+      <button id="reset">恢复 params.json</button>
+    </div>
+    <p class="note" id="status"></p>
+  </aside>
+  <main>
+    <div class="toolbar">
+      <input type="text" id="text" value="乐园公交" placeholder="输入样字中的字，放大查看">
+    </div>
+    <div class="hero" id="hero"></div>
+    <div class="grid" id="grid"></div>
+
+    <h2>已导出字体（dist/ChuHei-Regular.woff2）</h2>
+    <div class="sample">
+      <p style="font-size:56px">永国字体黑中文设计</p>
+      <p style="font-size:32px">春夏秋冬风雨云电花草树林森</p>
+      <p style="font-size:20px">上班族追公交，走路快慢在你我。东西南北，时间光明星海龙飞起。</p>
+    </div>
+    <p class="note">这里显示的是上次构建的字体文件，调参后需重新 <code>npm run build</code> 并刷新才会更新；样字集以外的字会用系统字体代替。</p>
+  </main>
+</div>
+
+<script type="module">
+import { DEFAULT_PARAMS, glyphPolygons, toPath } from '../lib/hei.js';
+
+// 滑块定义：键名、中文名、范围、步长、说明
+const FIELDS = [
+  ['weight', '笔画粗细', 20, 160, 1, '竖画宽度，字体单位（字身 1024）'],
+  ['contrast', '横竖比', 0.5, 1.2, 0.01, '横画相对竖画的粗细'],
+  ['scale', '字面大小', 0.7, 1.1, 0.01, '字在字身框中的占比'],
+  ['extend', '笔端外延', -20, 40, 1, '起笔收笔延长，负值为缩短'],
+  ['straighten', '横平竖直', 0, 30, 1, '偏离水平/竖直小于该角度的笔段会被拉正'],
+  ['smoothAngle', '平滑阈值', 0, 120, 1, '小于该角度的转折会被磨圆'],
+  ['smoothPasses', '平滑次数', 0, 5, 1, ''],
+  ['taper', '撇尾收细', 0, 0.9, 0.01, '撇画末端变细的程度'],
+  ['taperLength', '收细长度', 0.1, 1, 0.01, '收细段占整笔的比例'],
+  ['miterLimit', '折角尖度', 1, 4, 0.05, '转折外角最多伸多长，超过则切平'],
+];
+
+const $ = (id) => document.getElementById(id);
+let medians = {};
+let saved = { ...DEFAULT_PARAMS };
+let params = { ...DEFAULT_PARAMS };
+
+function buildControls() {
+  $('controls').innerHTML = FIELDS.map(([k, name, min, max, step, tip]) => `
+    <div class="field">
+      <label for="f-${k}"><b>${name}</b><span id="v-${k}"></span></label>
+      <input type="range" id="f-${k}" min="${min}" max="${max}" step="${step}">
+      ${tip ? `<small>${tip}</small>` : ''}
+    </div>`).join('');
+  for (const [k] of FIELDS) {
+    $(`f-${k}`).addEventListener('input', (e) => { params[k] = +e.target.value; sync(); });
+  }
+  $('roundCap').addEventListener('change', (e) => { params.roundCap = e.target.checked; sync(); });
+  $('showSkeleton').addEventListener('change', render);
+  $('showGuide').addEventListener('change', render);
+  $('text').addEventListener('input', renderHero);
+}
+
+function sync() {
+  for (const [k] of FIELDS) {
+    $(`f-${k}`).value = params[k];
+    $(`v-${k}`).textContent = params[k];
+  }
+  $('roundCap').checked = !!params.roundCap;
+  render();
+}
+
+function svgFor(ch) {
+  const strokes = medians[ch];
+  const guide = $('showGuide').checked ? '<rect class="guide" x="0" y="-124" width="1024" height="1024"/>' : '';
+  const skel = $('showSkeleton').checked
+    ? strokes.map((m) => `<polyline class="skeleton" points="${m.map((p) => p.join(',')).join(' ')}"/>`).join('')
+    : '';
+  return `<svg viewBox="0 0 1024 1024" role="img" aria-label="${ch}">
+    <g transform="matrix(1 0 0 -1 0 900)">${guide}
+      <path class="glyph" fill-rule="nonzero" d="${toPath(glyphPolygons(strokes, params))}"/>${skel}
+    </g></svg>`;
+}
+
+function renderHero() {
+  const chars = [...$('text').value].filter((c) => medians[c]);
+  $('hero').innerHTML = chars.length ? chars.map(svgFor).join('') : '<span class="note">样字集里没有这些字，可点击下方任意字放大。</span>';
+}
+
+function render() {
+  renderHero();
+  $('grid').innerHTML = Object.keys(medians).map((c) => `<div class="cell" data-c="${c}" title="${c}">${svgFor(c)}</div>`).join('');
+}
+
+$('grid').addEventListener('click', (e) => {
+  const cell = e.target.closest('.cell');
+  if (cell) { $('text').value = cell.dataset.c; renderHero(); }
+});
+
+$('copy').addEventListener('click', async () => {
+  const json = JSON.stringify(params, null, 2);
+  try { await navigator.clipboard.writeText(json + '\n'); $('status').textContent = '已复制，粘贴到 params.json 即可。'; }
+  catch { $('status').textContent = json; }
+});
+$('reset').addEventListener('click', () => { params = { ...saved }; sync(); });
+
+const [m, p] = await Promise.all([
+  fetch('../data/medians.json').then((r) => r.json()),
+  fetch('../params.json').then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
+]);
+medians = m;
+saved = { ...DEFAULT_PARAMS, ...p };
+params = { ...saved };
+buildControls();
+sync();
+</script>
+</body>
+</html>
